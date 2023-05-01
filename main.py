@@ -1,5 +1,6 @@
 from real_data import RealData
 import cv2
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -32,6 +33,24 @@ if __name__ == '__main__':
         # read the path of the image, then assign it to the "imread function"
         image = cv2.imread(struct['filename'])
 
+        # convert the image to grayscale format
+        img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        kernel_smoothing = np.ones((9, 9), np.float32) / 81
+        img_smoothed = cv2.filter2D(img_gray, -1, kernel_smoothing)
+
+        ret, thresh = cv2.threshold(img_smoothed, 125, 255, cv2.THRESH_BINARY)
+
+        # detect the contours on the binary image using cv2.CHAIN_APPROX_NONE
+        contours, hierarchy = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
+
+        # copying the original image to draw contours on it
+        img_copy = image.copy()
+
+        cv2.drawContours(image=img_copy, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=2,
+                         lineType=cv2.LINE_AA)
+
+        """
         # a loop iterating on the bounding boxes of an image, and calculate their starting and end points
         for bounding_box in struct['boxes']:
 
@@ -44,9 +63,13 @@ if __name__ == '__main__':
 
             # to draw a rectangle on the image
             cv2.rectangle(image, start, end, box_color, 1)
+        """
 
         window_name = 'image'
+        window_name2 = 'smoothed'
 
-        cv2.imshow(window_name, image)
+        cv2.imshow(window_name2, img_smoothed)
+
+        cv2.imshow(window_name, img_copy)
 
         cv2.waitKey(0)
