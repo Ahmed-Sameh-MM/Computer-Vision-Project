@@ -1,21 +1,11 @@
-from __future__ import print_function
-import json
+from real_data import RealData
 import cv2
-def read_json(file_path):
-
-    f = open(file_path, )
-    data = json.load(f)
-
-    # print the first structure (first image data)
-    print("The data of the first image is: ", data[0])
-
-    return data
 
 
 if __name__ == '__main__':
 
     # call read_json to get a json object
-    training_data = read_json('training.json')
+    training_data = RealData().read_json(file_path='training.json')
 
     for i in range(len(training_data)):
 
