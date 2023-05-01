@@ -4,6 +4,7 @@ A Street View House Numbers (SVHN) Recognition Project
 
 ## Dependencies
 ```
+1- OpenCV
 ```
 
 ## How to Run
