@@ -36,10 +36,16 @@ if __name__ == '__main__':
         # convert the image to grayscale format
         img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
+        # Apply histogram equalization to enhance the contrast of the image
+        img_equalized = cv2.equalizeHist(img_gray)
+
+        # Apply a median filter with a kernel size of 3
+        img_median = cv2.fastNlMeansDenoising(img_equalized)
+
         kernel_smoothing = np.ones((9, 9), np.float32) / 81
         img_smoothed = cv2.filter2D(img_gray, -1, kernel_smoothing)
 
-        ret, thresh = cv2.threshold(img_smoothed, 125, 255, cv2.THRESH_BINARY)
+        ret, thresh = cv2.threshold(img_median, 125, 255, cv2.THRESH_BINARY)
 
         # detect the contours on the binary image using cv2.CHAIN_APPROX_NONE
         contours, hierarchy = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
@@ -68,7 +74,7 @@ if __name__ == '__main__':
         window_name = 'image'
         window_name2 = 'smoothed'
 
-        cv2.imshow(window_name2, img_smoothed)
+        cv2.imshow(window_name2, img_median)
 
         cv2.imshow(window_name, img_copy)
 
