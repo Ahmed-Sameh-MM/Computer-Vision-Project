@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from constants import *
 
 
 class Localize:
@@ -11,7 +12,7 @@ class Localize:
         for struct in training_data:
 
             # read the path of the image, then assign it to the "imread function"
-            image = cv2.imread(struct['filename'])
+            image = cv2.imread(ROOT_DIR + '/train/' + struct['filename'])
 
             kernel_smoothing = np.ones((3, 3), np.float32) / 9
             img_smoothed = cv2.filter2D(image, -1, kernel_smoothing)
@@ -67,11 +68,14 @@ class Localize:
                 cv2.rectangle(image, start, end, box_color, 1)
             """
 
-            window_name = 'result_norm'
-            window_name_2 = 'result'
+            # window_name = 'result_norm'
+            # window_name_2 = 'result'
 
-            cv2.imshow(window_name_2, thresh)
+            # cv2.imshow(window_name, img_copy)
+            # cv2.imshow(window_name_2, thresh)
 
-            cv2.imshow(window_name, img_copy)
+            os.chdir(ROOT_DIR + '/output')
 
-            cv2.waitKey(0)
+            cv2.imwrite(struct['filename'], img_copy)
+
+            # cv2.waitKey(0)
