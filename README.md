@@ -14,16 +14,16 @@ A Street View House Numbers (SVHN) Recognition Project
 
 ## How to Run
  ```
-1- install the above dependencies
+1- Install the above dependencies
 
-2- open PyCharm
+2- Open PyCharm
 
-3- Run the code
+3- Run the code in the PyCharm Environment
 ```
 
 ## [Phase 1]
 ```
-The output of this phase is to localize the digits in the test images
+The output of this phase is to localize the digits in the "train" dataset.
 ```
 
 ## [Phase 2]
