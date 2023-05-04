@@ -3,6 +3,7 @@ import numpy as np
 from constants import *
 from typing import List
 from image import Image
+from accuracy import bb_intersection_over_union
 
 
 class Localize:
@@ -14,17 +15,18 @@ class Localize:
     high_images_min = []
     images_height = []
     images_width = []
+
     @staticmethod
-    def localize_digits(training_data : List[Image]):
-        # setting the box color to blue
-        box_color = (255, 0, 0)
+    def localize_digits(images: List[Image]):
 
-        for image in training_data:
+        img1 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
+        img2 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
+        accuracy = []
 
-            print(ROOT_DIR + '/train/' + image.filename)
+        for i in range(3800):
 
             # read the path of the image, then assign it to the "imread function"
-            image = cv2.imread(ROOT_DIR + '/train/' + image.filename)
+            image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
 
             image_height = int(image.shape[0])
             image_width = int(image.shape[1])
@@ -81,45 +83,63 @@ class Localize:
             else:
                 min_width_contour = 4
                 max_width_contour = 37
-            # if 24 < image_height < 50:
-            #     min_height_contour = 5
-            #     max_height_contour = 10
-            # else:
+
             min_height_contour = 8
             max_height_contour = 150
 
             for c in contours:
-                x, y, w, h = cv2.boundingRect(c)
+                predicted_box = cv2.boundingRect(c)
+                images[i].predicted_bbox.append(predicted_box)
+                x = predicted_box[0]
+                y = predicted_box[1]
+                w = predicted_box[2]
+                h = predicted_box[3]
                 if min_width_contour < w < max_width_contour and min_height_contour < h < max_height_contour:
-                    print
-                    cv2.contourArea(c)
+
                     cv2.rectangle(img_copy_for_bounding_boxes, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
-
-
-            cv2.imshow("final result", img_copy_for_bounding_boxes)
-
-            cv2.imshow("black and white after thresh", thresh)
-
-            cv2.imshow("contoured", img_copy_for_contours)
-
-            cv2.waitKey(0)
-            """
-            # a loop iterating on the bounding boxes of an image, and calculate their starting and end points
-            for bounding_box in image['boxes']:
+            # a loop iterating onn the bounding boxes of an image, and calculate their starting and end points
+            for bounding_box in images[i].real_bboxes:
 
                 # the top left corner
-                start = (int(bounding_box['left']), int(bounding_box['top']))
+                start = (int(bounding_box.left), int(bounding_box.top))
 
                 # the right bottom corner
-                end = (int(bounding_box['left']) + int(bounding_box['width']),
-                       int(bounding_box['top']) + int(bounding_box['height']))
+                end = (int(bounding_box.left) + int(bounding_box.width),
+                       int(bounding_box.top) + int(bounding_box.height))
 
                 # to draw a rectangle on the image
-                cv2.rectangle(image, start, end, box_color, 1)
-            """
-        width_range = max(Localize.images_width) - min(Localize.images_width)
-        height_range = max(Localize.images_height) - min(Localize.images_height)
+                cv2.rectangle(img_copy_for_bounding_boxes, start, end, (0, 0, 255), 1)
+
+            # cv2.imshow("final result", img_copy_for_bounding_boxes)
+            #
+            # cv2.imshow("black and white after thresh", thresh)
+            #
+            # cv2.imshow("contoured", img_copy_for_contours)
+            #
+            # cv2.waitKey(0)
+
+            ####accuracy calculations#####
+            # Draw rectangles on img1 at the locations specified in realOutput.
+            for (x, y, w, h) in images[i].predicted_bbox:
+                cv2.rectangle(img1, (x, y), (x + w, y + h), 255, 2)
+
+            # Draw rectangles on img2 at the locations specified in myOutput.
+            for box in images[i].real_bboxes:
+                cv2.rectangle(img2, (int(box.left), int(box.top)), (int(box.left) + int(box.width), int(box.top) + int(box.height)), 255, 3)
+
+            # Use a bitwise AND operation to calculate the intersection of img1 and img2.
+            interSection = cv2.bitwise_and(img1, img2)
+
+            # Calculate the IoU percentage.
+            accuracy.append((np.sum(interSection == 255) /
+                                (np.sum(img1 == 255) + np.sum(img2 == 255) - np.sum(interSection == 255))) * 100)
+
+        print("Harsh accuracy", sum(accuracy) / len(accuracy))
+
+        image_accuracy = bb_intersection_over_union(images[i].predicted_bbox, images[i].real_bboxes)
+
+        print("Non Harsh accuracy", image_accuracy)
 
         print("max, min", max(Localize.images_width), min(Localize.images_width))
         print("max, min height", max(Localize.images_width), min(Localize.images_width))
