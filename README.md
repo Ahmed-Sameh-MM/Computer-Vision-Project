@@ -11,16 +11,17 @@ A Street View House Numbers (SVHN) Recognition Project
 5- os
 6- cv2
 7- numpy
-8- constants
 ```
 
 ## How to Run
-
+ ```
+ 
 1- install the above dependencies
 
 2- open PyCharm
 
 3- Run the code
+```
 
 ## [Phase 1]
 ```
