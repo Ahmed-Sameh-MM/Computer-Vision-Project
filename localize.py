@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from constants import *
+from typing import List
+from image import Image
 
 
 class Localize:
@@ -13,16 +15,16 @@ class Localize:
     images_height = []
     images_width = []
     @staticmethod
-    def localize_digits(training_data):
+    def localize_digits(training_data : List[Image]):
         # setting the box color to blue
         box_color = (255, 0, 0)
 
-        for struct in training_data:
+        for image in training_data:
 
-            print(ROOT_DIR + '/train/' + struct['filename'])
+            print(ROOT_DIR + '/train/' + image.filename)
 
             # read the path of the image, then assign it to the "imread function"
-            image = cv2.imread(ROOT_DIR + '/train/' + struct['filename'])
+            image = cv2.imread(ROOT_DIR + '/train/' + image.filename)
 
             image_height = int(image.shape[0])
             image_width = int(image.shape[1])
@@ -104,7 +106,7 @@ class Localize:
             cv2.waitKey(0)
             """
             # a loop iterating on the bounding boxes of an image, and calculate their starting and end points
-            for bounding_box in struct['boxes']:
+            for bounding_box in image['boxes']:
 
                 # the top left corner
                 start = (int(bounding_box['left']), int(bounding_box['top']))
