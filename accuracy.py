@@ -44,5 +44,4 @@ class Accuracy:
                 acc_iou += iou
 
         # return the intersection over union values
-        print(acc_iou / len(real_bbox))
-        return iou
+        return acc_iou / len(real_bbox)

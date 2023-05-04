@@ -1,5 +1,5 @@
 from image import Image
-from accuracy import Accuracy
+from result import Result
 from constants import *
 
 from typing import List
@@ -18,7 +18,7 @@ class Localize:
     images_width = []
 
     @staticmethod
-    def localize_digits(images: List[Image], number_of_images: int) -> List[Image]:
+    def localize_digits(images: List[Image], number_of_images: int, show_images: bool) -> Result:
 
         img1 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
         img2 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
@@ -33,9 +33,6 @@ class Localize:
             image_width = int(image.shape[1])
             Localize.images_width.append(image_width)
             Localize.images_height.append(image_height)
-
-            kernel_smoothing = np.ones((3, 3), np.float32) / 9
-            img_smoothed = cv2.filter2D(image, -1, kernel_smoothing)
 
             # convert the image to grayscale format
             img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -114,13 +111,14 @@ class Localize:
 
                 images[i].data = img_copy_for_bounding_boxes
 
-            # cv2.imshow("final result", img_copy_for_bounding_boxes)
-            #
-            # cv2.imshow("black and white after thresh", thresh)
-            #
-            # cv2.imshow("contoured", img_copy_for_contours)
-            #
-            # cv2.waitKey(0)
+            if show_images:
+                cv2.imshow("final result", img_copy_for_bounding_boxes)
+
+                cv2.imshow("black and white after thresh", thresh)
+
+                cv2.imshow("contoured", img_copy_for_contours)
+
+                cv2.waitKey(0)
 
             # accuracy calculations
             # Draw rectangles on img1 at the locations specified in realOutput.
@@ -138,13 +136,7 @@ class Localize:
             accuracy.append((np.sum(interSection == 255) /
                                 (np.sum(img1 == 255) + np.sum(img2 == 255) - np.sum(interSection == 255))) * 100)
 
-        # print("Harsh accuracy", sum(accuracy) / len(accuracy))
+        # print("max, min:", max(Localize.images_width), min(Localize.images_width))
+        # print("max, min height:", max(Localize.images_width), min(Localize.images_width))
 
-        image_accuracy = Accuracy().bb_intersection_over_union(images[i].predicted_bbox, images[i].real_bboxes)
-
-        # print("Non Harsh accuracy", image_accuracy)
-
-        print("max, min", max(Localize.images_width), min(Localize.images_width))
-        print("max, min height", max(Localize.images_width), min(Localize.images_width))
-
-        return images
+        return Result(images=images, accuracy=accuracy)
