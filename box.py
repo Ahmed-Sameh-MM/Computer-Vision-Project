@@ -1,6 +1,3 @@
-import json
-
-
 class Box:
 
     def __init__(self, height: float, label: float, left: float, top: float, width: float):
@@ -11,6 +8,6 @@ class Box:
         self.width = width
 
     @classmethod
-    def fromJson(cls, json_str):
+    def from_json(cls, json_str):
         data = json_str
         return cls(data['height'], data['label'], data['left'], data['top'], data['width'])
