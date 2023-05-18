@@ -1,14 +1,11 @@
 import math
-
 import cv2
-import numpy as np
+
 from constants import *
-from typing import List
-from image import Image
-from accuracy import bb_intersection_over_union
+
 from image import Image
 from typing import List
-import scipy.io
+
 
 class Recognize:
 
@@ -51,9 +48,8 @@ class Recognize:
         except:
             return math.inf
 
-
     @staticmethod
-    def testImages(images: List[Image]):
+    def testImages(images: List[Image], number_of_images: int):
         # mat = scipy.io.loadmat('train_32x32.mat')
         # X = mat['X']
         # Labels = mat['y']
@@ -62,7 +58,7 @@ class Recognize:
         refernece_ratio = (reference_image.shape[1] + reference_image.shape[0]) / 2
         accuracy = []
 
-        for i in range(1, 1000):
+        for i in range(1, number_of_images):
             image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
             image_with_boxes = cv2.imread(ROOT_DIR + '/output/' + images[i].filename)
             image_aspect_ratio = (image.shape[1] + image.shape[0]) / 2

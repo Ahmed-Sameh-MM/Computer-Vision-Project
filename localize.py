@@ -3,8 +3,8 @@ import numpy as np
 from constants import *
 from typing import List
 from image import Image
-from accuracy import bb_intersection_over_union
-import matplotlib.pyplot as plt
+from result import Result
+
 
 class Localize:
 
@@ -12,14 +12,14 @@ class Localize:
     images_width = []
 
     @staticmethod
-    def localize_digits(images: List[Image]):
+    def localize_digits(images: List[Image], number_of_images: int, show_images: bool):
 
         non_harsh_accuracy = 0
         img1 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
         img2 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
         accuracy = []
 
-        for i in range(1, 1000):
+        for i in range(1, number_of_images):
             # read the path of the image, then assign it to the "imread function"
             image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
             image_height = int(image.shape[0])
@@ -120,14 +120,18 @@ class Localize:
                 # to draw a rectangle on the image
                 cv2.rectangle(img_copy_for_bounding_boxes, start, end, (0, 0, 255), 1)
 
+                images[i].data = img_copy_for_bounding_boxes
+
             cv2.imwrite((ROOT_DIR + '/output/' + f'{i+1}.png'), img_copy_for_bounding_boxes)
-            # cv2.imshow("final result", img_copy_for_bounding_boxes)
-            #
-            # cv2.imshow("black and white after thresh", thresh)
-            #
-            # cv2.imshow("contoured", img_copy_for_contours)
-            #
-            # cv2.waitKey(0)
+
+            if show_images:
+                cv2.imshow("final result", img_copy_for_bounding_boxes)
+
+                cv2.imshow("black and white after thresh", thresh)
+
+                cv2.imshow("contoured", img_copy_for_contours)
+
+                cv2.waitKey(0)
 
             ####accuracy calculations#####
             # Draw rectangles on img1 at the locations specified in realOutput.
@@ -145,7 +149,7 @@ class Localize:
             accuracy.append((np.sum(interSection == 255) /
                                 (np.sum(img1 == 255) + np.sum(img2 == 255) - np.sum(interSection == 255))) * 100)
 
-            # image_accuracy = bb_intersection_over_union(images[i].predicted_bbox, images[i].real_bboxes)
+            # image_accuracy = Accuracy().bb_intersection_over_union(images[i].predicted_bbox, images[i].real_bboxes)
             # non_harsh_accuracy += image_accuracy
 
         print("Harsh accuracy for localization:", sum(accuracy) / len(accuracy))
@@ -155,4 +159,4 @@ class Localize:
         print("max, min", max(Localize.images_width), min(Localize.images_width))
         print("max, min height", max(Localize.images_width), min(Localize.images_width))
 
-
+        return Result(images=images, accuracy=accuracy)
