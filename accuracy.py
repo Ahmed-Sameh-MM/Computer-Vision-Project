@@ -47,5 +47,4 @@ def bb_intersection_over_union(predicted_bbox, real_bbox: List[Box]):
 
 
     # return the intersection over union values
-    print(acc_iou / len(real_bbox))
-    return iou
+    return acc_iou / len(real_bbox)

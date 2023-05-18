@@ -4,40 +4,36 @@ from constants import *
 from typing import List
 from image import Image
 from accuracy import bb_intersection_over_union
-
+import matplotlib.pyplot as plt
 
 class Localize:
-    wide_images_max = []
-    wide_images_min = []
-    wide_images_mid = []
-    high_images_max = []
-    high_images_mid = []
-    high_images_min = []
+
     images_height = []
     images_width = []
 
     @staticmethod
     def localize_digits(images: List[Image]):
 
+        non_harsh_accuracy = 0
         img1 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
         img2 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
         accuracy = []
 
-        for i in range(3800):
-
+        for i in range(1, 1000):
             # read the path of the image, then assign it to the "imread function"
             image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
-
             image_height = int(image.shape[0])
             image_width = int(image.shape[1])
             Localize.images_width.append(image_width)
             Localize.images_height.append(image_height)
 
             kernel_smoothing = np.ones((3, 3), np.float32) / 9
-            img_smoothed = cv2.filter2D(image, -1, kernel_smoothing)
+            #img_smoothed = cv2.filter2D(image, -1, kernel_smoothing)
 
             # convert the image to grayscale format
             img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+            cv2.imwrite(ROOT_DIR + '/1_gray/' + images[i].filename, img_gray)
 
             rgb_planes = cv2.split(img_gray)
 
@@ -51,9 +47,13 @@ class Localize:
                                          dtype=cv2.CV_8UC1)
                 result_planes.append(diff_img)
                 result_norm_planes.append(norm_img)
-
-            result = cv2.merge(result_planes)
             result_norm = cv2.merge(result_norm_planes)
+
+            cv2.imwrite(ROOT_DIR + '/2_normalized/' + images[i].filename, result_norm)
+
+            # plt.imshow(result_norm, cmap='gray')
+            # plt.axis("off")
+            # plt.show()
 
             # Apply histogram equalization to enhance the contrast of the image
             img_equalized = cv2.equalizeHist(img_gray)
@@ -62,6 +62,13 @@ class Localize:
             img_median = cv2.fastNlMeansDenoising(result_norm)
 
             ret, thresh = cv2.threshold(result_norm, 200, 255, cv2.THRESH_BINARY)
+
+            cv2.imwrite(ROOT_DIR + '/3_threshold/' + images[i].filename, thresh)
+
+
+            # plt.imshow(thresh, cmap='gray')
+            # plt.axis("off")
+            # plt.show()
 
             # detect the contours on the binary image using cv2.CHAIN_APPROX_NONE
             contours, hierarchy = cv2.findContours(image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
@@ -72,6 +79,8 @@ class Localize:
 
             cv2.drawContours(image=img_copy_for_contours, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=2,
                              lineType=cv2.LINE_AA)
+
+            cv2.imwrite(ROOT_DIR + '/4_contours/' + images[i].filename, img_copy_for_contours)
 
             if image_width > 700:
                 min_width_contour = 5
@@ -96,7 +105,7 @@ class Localize:
                 h = predicted_box[3]
                 if min_width_contour < w < max_width_contour and min_height_contour < h < max_height_contour:
 
-                    cv2.rectangle(img_copy_for_bounding_boxes, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                    cv2.rectangle(img_copy_for_bounding_boxes, (x, y), (x + w, y + h), (255, 0, 0), 1)
 
             # a loop iterating onn the bounding boxes of an image, and calculate their starting and end points
             for bounding_box in images[i].real_bboxes:
@@ -111,6 +120,7 @@ class Localize:
                 # to draw a rectangle on the image
                 cv2.rectangle(img_copy_for_bounding_boxes, start, end, (0, 0, 255), 1)
 
+            cv2.imwrite((ROOT_DIR + '/output/' + f'{i+1}.png'), img_copy_for_bounding_boxes)
             # cv2.imshow("final result", img_copy_for_bounding_boxes)
             #
             # cv2.imshow("black and white after thresh", thresh)
@@ -135,11 +145,14 @@ class Localize:
             accuracy.append((np.sum(interSection == 255) /
                                 (np.sum(img1 == 255) + np.sum(img2 == 255) - np.sum(interSection == 255))) * 100)
 
-        print("Harsh accuracy", sum(accuracy) / len(accuracy))
+            # image_accuracy = bb_intersection_over_union(images[i].predicted_bbox, images[i].real_bboxes)
+            # non_harsh_accuracy += image_accuracy
 
-        image_accuracy = bb_intersection_over_union(images[i].predicted_bbox, images[i].real_bboxes)
+        print("Harsh accuracy for localization:", sum(accuracy) / len(accuracy))
 
-        print("Non Harsh accuracy", image_accuracy)
+        # print("Non Harsh accuracy", non_harsh_accuracy/1000)
 
         print("max, min", max(Localize.images_width), min(Localize.images_width))
         print("max, min height", max(Localize.images_width), min(Localize.images_width))
+
+
