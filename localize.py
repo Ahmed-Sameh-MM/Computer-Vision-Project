@@ -123,15 +123,15 @@ class Localize:
                 images[i].data = img_copy_for_bounding_boxes
 
             cv2.imwrite((ROOT_DIR + '/output/' + f'{i+1}.png'), img_copy_for_bounding_boxes)
-
-            if show_images:
-                cv2.imshow("final result", img_copy_for_bounding_boxes)
-
-                cv2.imshow("black and white after thresh", thresh)
-
-                cv2.imshow("contoured", img_copy_for_contours)
-
-                cv2.waitKey(0)
+            #
+            # if show_images:
+            #     cv2.imshow("final result", img_copy_for_bounding_boxes)
+            #
+            #     cv2.imshow("black and white after thresh", thresh)
+            #
+            #     cv2.imshow("contoured", img_copy_for_contours)
+            #
+            #     cv2.waitKey(0)
 
             ####accuracy calculations#####
             # Draw rectangles on img1 at the locations specified in realOutput.

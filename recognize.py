@@ -114,6 +114,8 @@ class Recognize:
                                          (image_aspect_ratio / refernece_ratio) * 1, text_color, text_thickness,
                                          cv2.LINE_AA)
                         break
-            cv2.imwrite((ROOT_DIR + '/final_output/' + f'{i+1}.png'), image_with_boxes)
+            cv2.imwrite((ROOT_DIR + '/final_output/' + f'{i+1}.png'), im)
+            cv2.imshow("final", im)
+            cv2.waitKey(0)
 
         return RecognitionResult(images=matched_images, accuracy=sum(accuracy) / len(accuracy) * 100)
