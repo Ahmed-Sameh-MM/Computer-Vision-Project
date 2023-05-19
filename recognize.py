@@ -1,8 +1,11 @@
 import math
 import cv2
-import os
+import numpy as np
+
 from constants import *
 from image import Image
+from recognition_result import RecognitionResult
+
 from typing import List
 
 
@@ -42,9 +45,9 @@ class Recognize:
             matched_image = cv2.drawMatches(img1, key_points1, img2, key_points2, optimized_matches, None,
                                             flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
-            return sum(normalized_scores) / len(normalized_scores)
+            return sum(normalized_scores) / len(normalized_scores), matched_image
         except:
-            return math.inf
+            return math.inf, np.ndarray(shape=(0, 0), dtype=int, order='F')
 
     @staticmethod
     def test_images(images: List[Image], number_of_images: int):
@@ -52,7 +55,9 @@ class Recognize:
         refernece_ratio = (reference_image.shape[1] + reference_image.shape[0]) / 2
         accuracy = []
 
-        for i in range(1, number_of_images):
+        matched_images = []
+
+        for i in range(1, number_of_images + 1):
             image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
             image_with_boxes = cv2.imread(ROOT_DIR + '/output/' + images[i].filename)
             image_aspect_ratio = (image.shape[1] + image.shape[0]) / 2
@@ -74,11 +79,15 @@ class Recognize:
                     desired_width = int(desired_height * aspect_ratio)
                     resized_image = cv2.resize(digit_template, (desired_width, desired_height))
 
-                    sim = Recognize.match_features(resized_image, img)
+                    sim, matched_image = Recognize.match_features(resized_image, img)
+
+                    if len(matched_image) != 0:
+                        matched_images.append(matched_image)
 
                     if sim < score:
                         score = sim
                         digit = filename.split(".")[0]
+
                 accuracy.append(digit == label)
                 boxA_x1 = Box.left
                 boxA_x2 = Box.left + Box.width
@@ -107,4 +116,4 @@ class Recognize:
                         break
             cv2.imwrite((ROOT_DIR + '/final_output/' + f'{i+1}.png'), image_with_boxes)
 
-        print("Number recognition accuracy:", (sum(accuracy) / len(accuracy)) * 100)
+        return RecognitionResult(images=matched_images, accuracy=sum(accuracy) / len(accuracy) * 100)

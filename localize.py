@@ -19,7 +19,7 @@ class Localize:
         img2 = cv2.imread('black.png', cv2.IMREAD_GRAYSCALE)
         accuracy = []
 
-        for i in range(1, number_of_images):
+        for i in range(1, number_of_images + 1):
             # read the path of the image, then assign it to the "imread function"
             image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
             image_height = int(image.shape[0])
