@@ -50,19 +50,19 @@ class Recognize:
             return math.inf, np.ndarray(shape=(0, 0), dtype=int, order='F')
 
     @staticmethod
-    def test_images(images: List[Image], number_of_images: int):
+    def test_images(images: List[Image], number_of_images: int, show_images: bool):
         reference_image = cv2.imread(ROOT_DIR + '/train/1.png')
         refernece_ratio = (reference_image.shape[1] + reference_image.shape[0]) / 2
         accuracy = []
 
         matched_images = []
 
+        final_image = 0
+
         for i in range(1, number_of_images + 1):
             image = cv2.imread(ROOT_DIR + '/train/' + images[i].filename)
             image_with_boxes = cv2.imread(ROOT_DIR + '/output/' + images[i].filename)
             image_aspect_ratio = (image.shape[1] + image.shape[0]) / 2
-            image_height = int(image.shape[0])
-            image_width = int(image.shape[1])
 
             for Box in images[i].real_bboxes:
                 score = math.inf
@@ -93,6 +93,7 @@ class Recognize:
                 boxA_x2 = Box.left + Box.width
                 boxA_y1 = Box.top
                 boxA_y2 = Box.top + Box.height
+
                 for boxB in images[i].predicted_bbox:
                     boxB_x1 = boxB[0]
                     boxB_x2 = boxB[0] + boxB[2]
@@ -106,16 +107,21 @@ class Recognize:
 
                     inter_area = max(0, int(x_b - x_a + 1)) * max(0, int(y_b - y_a + 1))
                     if inter_area > ((boxA_x2 - boxA_x1) * (boxA_y2 - boxA_y1)) / 2:
-                        text_position = (int((int(boxA_x1) + int(boxA_x2)) / 2), int(boxA_y1) - 2)
+                        text_position = (int((int(boxA_x1) + int(boxA_x2)) / 2), (int((int(boxA_y1) + int(boxA_y2)) / 2)))
                         font = cv2.FONT_HERSHEY_SIMPLEX
-                        text_color = (0, 0, 255)
+                        text_color = (0, 255, 0)
                         text_thickness = 1
-                        im = cv2.putText(image_with_boxes, str(digit), text_position, font,
-                                         (image_aspect_ratio / refernece_ratio) * 1, text_color, text_thickness,
-                                         cv2.LINE_AA)
-                        break
-            cv2.imwrite((ROOT_DIR + '/final_output/' + f'{i+1}.png'), im)
-            cv2.imshow("final", im)
-            cv2.waitKey(0)
 
-        return RecognitionResult(images=matched_images, accuracy=sum(accuracy) / len(accuracy) * 100)
+                        final_image = cv2.putText(image_with_boxes, str(digit), text_position, font,
+                                         (image_aspect_ratio / refernece_ratio) * 3, text_color, text_thickness,
+                                         cv2.LINE_AA)
+
+                        break
+
+            cv2.imwrite((ROOT_DIR + '/final_output/' + f'{i+1}.png'), final_image)
+
+            if show_images:
+                cv2.imshow("final image", final_image)
+                cv2.waitKey(0)
+
+        return RecognitionResult(matched_images=matched_images, accuracy=sum(accuracy) / len(accuracy) * 100)
